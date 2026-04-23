@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JukeboxDataAccess/JukeboxDataAccess.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JukeboxDataAccess.Tests/JukeboxDataAccess.Tests.csproj" />
+  </Folder>
+</Solution>
