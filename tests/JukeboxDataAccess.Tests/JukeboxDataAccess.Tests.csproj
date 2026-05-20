@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\JukeboxDataAccess\JukeboxDataAccess.csproj" />
+    <ProjectReference Include="..\..\src\JukeboxDataAccess\Jukebox.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

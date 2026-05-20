@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/JukeboxDataAccess/JukeboxDataAccess.csproj" />
+    <Project Path="Jukebox.DataAccess.Contracts/Jukebox.DataAccess.Contracts.csproj" Id="4918dfa7-5bed-42a1-b20f-d8c30efbf3b2" />
+    <Project Path="JukeboxDataAccess.EntityFramework/Jukebox.DataAccess.EntityFramework.csproj" Id="b3095c20-43d8-4906-bdde-b0df808496e7" />
+    <Project Path="src/JukeboxDataAccess/Jukebox.DataAccess.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/JukeboxDataAccess.Tests/JukeboxDataAccess.Tests.csproj" />

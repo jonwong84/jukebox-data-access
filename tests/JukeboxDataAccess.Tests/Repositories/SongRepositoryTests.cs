@@ -8,7 +8,7 @@ using JukeboxDataAccess.Requests;
 using Microsoft.Data.Sqlite;
 using Moq;
 
-namespace JukeboxDataAccess.Tests.Repositories;
+namespace Jukebox.DataAccess.Tests.Repositories;
 
 /// <summary>
 /// Tests for <see cref="SongRepository"/> using an in-memory SQLite database to exercise real SQL queries.
