@@ -6,8 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DataContracts\Album\" />
-    <Folder Include="DataContracts\Artist\" />
+    <Compile Remove="DataContracts\Album\**" />
+    <Compile Remove="DataContracts\Artist\**" />
+    <EmbeddedResource Remove="DataContracts\Album\**" />
+    <EmbeddedResource Remove="DataContracts\Artist\**" />
+    <None Remove="DataContracts\Album\**" />
+    <None Remove="DataContracts\Artist\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DataContracts\Common\" />
   </ItemGroup>
 
 </Project>

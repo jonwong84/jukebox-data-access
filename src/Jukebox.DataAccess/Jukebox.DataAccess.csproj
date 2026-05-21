@@ -12,12 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Sql\" />
+    <ProjectReference Include="..\Jukebox.DataAccess.Contracts\Jukebox.DataAccess.Contracts.csproj" />
+    <ProjectReference Include="..\Jukebox.DataAccess.EntityFramework\Jukebox.DataAccess.EntityFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jukebox.DataAccess.Contracts\Jukebox.DataAccess.Contracts.csproj" />
-    <ProjectReference Include="..\Jukebox.DataAccess.EntityFramework\Jukebox.DataAccess.EntityFramework.csproj" />
+    <Folder Include="Sql\" />
   </ItemGroup>
 
 </Project>
