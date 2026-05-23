@@ -56,6 +56,8 @@ public class JukeboxDbContext : DbContext
          {
              entity.HasKey(s => s.Id);
              entity.Property(s => s.Title).IsRequired().HasMaxLength(200);
+             entity.Property(s => s.CreatedBy).HasMaxLength(200);
+             entity.Property(s => s.UpdatedBy).HasMaxLength(200);
              entity.HasOne(s => s.Lyrics)
                    .WithOne(l => l.Song)
                    .HasForeignKey<SongLyrics>(l => l.SongId)

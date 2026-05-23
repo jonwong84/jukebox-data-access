@@ -12,7 +12,7 @@ public interface ISongRepositoryAccess
     /// Retrieves a single song by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the song to look up.</param>
-    /// <returns>The matching <see cref="GetSongResult"/>, or <c>null</c> if not found.</returns>
+    /// <returns>A <see cref="GetSongResult"/> indicating success or failure of the operation.</returns>
     Task<GetSongResult> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -26,7 +26,7 @@ public interface ISongRepositoryAccess
     /// Updates an existing song in the data store.
     /// </summary>
     /// <param name="request">The request containing updated song details.</param>
-    /// <returns>True if the update was successful; otherwise, false.</returns>
+    /// <returns>A <see cref="UpdateSongResult"/> containing the updated song details if successful.</returns>
     Task<UpdateSongResult> UpdateAsync(UpdateSongRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -58,6 +58,7 @@ namespace Jukebox.DataAccess.Songs
                     TrackNumber = request.TrackNumber,
                     Bpm = request.Bpm,
                     SongGenres = request.GenreIds.Select(id => new SongGenre { GenreId = id }).ToList(),
+                    CreatedBy = request.UserId,
                 };
 
                 if (!string.IsNullOrWhiteSpace(request.Lyrics))
@@ -223,6 +224,7 @@ namespace Jukebox.DataAccess.Songs
                 song.Duration = request.Duration;
                 song.TrackNumber = request.TrackNumber;
                 song.Bpm = request.Bpm;
+                song.UpdatedBy = request.UserId;
 
                 if (!string.IsNullOrWhiteSpace(request.Lyrics))
                 {

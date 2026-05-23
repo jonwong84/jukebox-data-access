@@ -16,6 +16,8 @@ public class Song
     public int? TrackNumber { get; set; }
     public int? Bpm { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+    public string? CreatedBy { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string? UpdatedBy { get; set; }
     public SongLyrics? Lyrics { get; set; }
 }
