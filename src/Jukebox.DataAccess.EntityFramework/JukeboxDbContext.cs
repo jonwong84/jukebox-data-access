@@ -7,12 +7,12 @@ public class JukeboxDbContext : DbContext
 {
     public JukeboxDbContext(DbContextOptions<JukeboxDbContext> options) : base(options) { }
 
-     public DbSet<Song> Songs => Set<Song>();
-     public DbSet<SongLyrics> SongLyrics => Set<SongLyrics>();
-     public DbSet<AlbumDescription> AlbumDescriptions => Set<AlbumDescription>();
+    public DbSet<Song> Songs => Set<Song>();
+    public DbSet<SongLyrics> SongLyrics => Set<SongLyrics>();
+    public DbSet<AlbumDescription> AlbumDescriptions => Set<AlbumDescription>();
     public DbSet<Artist> Artists => Set<Artist>();
-     public DbSet<Album> Albums => Set<Album>();
-     public DbSet<AlbumArtist> AlbumArtists => Set<AlbumArtist>();
+    public DbSet<Album> Albums => Set<Album>();
+    public DbSet<AlbumArtist> AlbumArtists => Set<AlbumArtist>();
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<SongGenre> SongGenres => Set<SongGenre>();
 
@@ -39,7 +39,20 @@ public class JukeboxDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-         modelBuilder.Entity<Song>(entity =>
+        modelBuilder.Entity<AlbumArtist>(entity =>
+        {
+            entity.HasKey(aa => new { aa.AlbumId, aa.ArtistId });
+            entity.HasOne(aa => aa.Album)
+                  .WithMany(a => a.AlbumArtists)
+                  .HasForeignKey(aa => aa.AlbumId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(aa => aa.Artist)
+                  .WithMany()
+                  .HasForeignKey(aa => aa.ArtistId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Song>(entity =>
          {
              entity.HasKey(s => s.Id);
              entity.Property(s => s.Title).IsRequired().HasMaxLength(200);
@@ -53,6 +66,7 @@ public class JukeboxDbContext : DbContext
         {
             entity.HasKey(g => g.Id);
             entity.Property(g => g.Name).IsRequired().HasMaxLength(100);
+            entity.Property(g => g.Description).HasMaxLength(2000);
 
             entity.HasOne(g => g.ParentGenre)
                   .WithMany(g => g.SubGenres)
@@ -65,7 +79,8 @@ public class JukeboxDbContext : DbContext
             entity.HasKey(sg => new { sg.SongId, sg.GenreId });
             entity.HasOne(sg => sg.Song)
                   .WithMany(s => s.SongGenres)
-                  .HasForeignKey(sg => sg.SongId);
+                  .HasForeignKey(sg => sg.SongId)
+                  .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(sg => sg.Genre)
                   .WithMany(g => g.SongGenres)
                   .HasForeignKey(sg => sg.GenreId);

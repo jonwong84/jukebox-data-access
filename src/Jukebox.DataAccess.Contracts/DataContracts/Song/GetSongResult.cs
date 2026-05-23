@@ -1,9 +1,9 @@
 ﻿namespace Jukebox.DataAccess.Contracts.DataContracts.Song
 {
-    public class UpdateSongResult
+    public class GetSongResult
     {
-        public SongDetails? SongDetails { get; set; }
         public bool Success { get; set; }
+        public SongDetails? SongDetails { get; set; }
         public string? ErrorMessage { get; set; }
     }
 }

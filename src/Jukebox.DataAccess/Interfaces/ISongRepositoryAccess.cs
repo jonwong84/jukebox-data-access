@@ -12,8 +12,8 @@ public interface ISongRepositoryAccess
     /// Retrieves a single song by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the song to look up.</param>
-    /// <returns>The matching <see cref="SongSummary"/>, or <c>null</c> if not found.</returns>
-    Task<SongSummary?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    /// <returns>The matching <see cref="GetSongResult"/>, or <c>null</c> if not found.</returns>
+    Task<GetSongResult> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a new song to the data store.
@@ -33,6 +33,6 @@ public interface ISongRepositoryAccess
     /// Deletes a song by its unique identifier.
     /// </summary>
     /// <param name="songId">The ID of the song to delete.</param>
-    /// <returns>True if the deletion was successful; otherwise, false.</returns>
-    Task<bool> DeleteAsync(int songId, CancellationToken cancellationToken = default);
+    /// <returns>The result of the delete operation.</returns>
+    Task<DeleteSongResult> DeleteAsync(int songId, CancellationToken cancellationToken = default);
 }
