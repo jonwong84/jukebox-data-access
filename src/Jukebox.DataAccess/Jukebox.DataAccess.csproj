@@ -1,23 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackageId>Jukebox.DataAccess</PackageId>
+		<Authors>jonwong84</Authors>
+		<Description>Data access layer for the Jukebox API providing CRUD operations for song metadata.</Description>
+		<RepositoryUrl>https://github.com/jonwong84/jukebox-data-access</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.72" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.27" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jukebox.DataAccess.Contracts\Jukebox.DataAccess.Contracts.csproj" />
-    <ProjectReference Include="..\Jukebox.DataAccess.EntityFramework\Jukebox.DataAccess.EntityFramework.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Jukebox.DataAccess.Contracts\Jukebox.DataAccess.Contracts.csproj" />
+		<ProjectReference Include="..\Jukebox.DataAccess.EntityFramework\Jukebox.DataAccess.EntityFramework.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Sql\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Sql\" />
+	</ItemGroup>
 
 </Project>

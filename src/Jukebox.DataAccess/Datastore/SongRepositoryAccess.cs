@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Jukebox.DataAccess.Songs
 {
-    internal class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILogger<SongRepositoryAccess> logger) : ISongRepositoryAccess
+    public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILogger<SongRepositoryAccess> logger) : ISongRepositoryAccess
     {
         private readonly EntityFramework.JukeboxDbContext _context = context;
         private readonly ILogger _logger = logger;
