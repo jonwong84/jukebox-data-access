@@ -7,320 +7,319 @@ using Jukebox.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jukebox.DataAccess.Songs
+namespace Jukebox.DataAccess.Datastore;
+
+public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILogger<SongRepositoryAccess> logger) : ISongRepositoryAccess
 {
-    public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILogger<SongRepositoryAccess> logger) : ISongRepositoryAccess
+    private readonly EntityFramework.JukeboxDbContext _context = context;
+    private readonly ILogger _logger = logger;
+
+    public async Task<AddSongResult> AddAsync(AddSongRequest request, CancellationToken cancellationToken = default)
     {
-        private readonly EntityFramework.JukeboxDbContext _context = context;
-        private readonly ILogger _logger = logger;
-
-        public async Task<AddSongResult> AddAsync(AddSongRequest request, CancellationToken cancellationToken = default)
+        try
         {
-            try
+            if (request.GenreIds.Count != 0)
             {
-                if (request.GenreIds.Count != 0)
-                {
-                    var invalidGenreIds = await GetInvalidGenreIdsAsync(request.GenreIds, cancellationToken);
-                    if (invalidGenreIds.Count != 0)
-                    {
-                        return new AddSongResult
-                        {
-                            Success = false,
-                            ErrorMessage = $"The following genre IDs do not exist: {string.Join(", ", invalidGenreIds)}",
-                        };
-                    }
-                }
-
-                if (!await ArtistExistsAsync(request.ArtistId, cancellationToken))
+                var invalidGenreIds = await GetInvalidGenreIdsAsync(request.GenreIds, cancellationToken);
+                if (invalidGenreIds.Count != 0)
                 {
                     return new AddSongResult
                     {
                         Success = false,
-                        ErrorMessage = $"Artist with ID {request.ArtistId} does not exist.",
+                        ErrorMessage = $"The following genre IDs do not exist: {string.Join(", ", invalidGenreIds)}",
                     };
                 }
-
-                if (request.AlbumId.HasValue && !await AlbumExistsAsync(request.AlbumId.Value, cancellationToken))
-                {
-                    return new AddSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Album with ID {request.AlbumId.Value} does not exist.",
-                    };
-                }
-
-                var song = new Song
-                {
-                    Title = request.Title,
-                    ArtistId = request.ArtistId,
-                    AlbumId = request.AlbumId,
-                    Duration = request.Duration,
-                    TrackNumber = request.TrackNumber,
-                    Bpm = request.Bpm,
-                    SongGenres = request.GenreIds.Select(id => new SongGenre { GenreId = id }).ToList(),
-                    CreatedBy = request.UserId,
-                };
-
-                if (!string.IsNullOrWhiteSpace(request.Lyrics))
-                {
-                    song.Lyrics = new SongLyrics
-                    {
-                        Lyrics = request.Lyrics,
-                    };
-                }
-
-                await _context.Songs.AddAsync(song, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return new AddSongResult
-                {
-                    Success = true,
-                    SongId = song.Id,
-                };
             }
-            catch (Exception ex)
+
+            if (!await ArtistExistsAsync(request.ArtistId, cancellationToken))
             {
-                _logger.LogError(ex, "Failed to add song with title {Title}", request.Title);
                 return new AddSongResult
                 {
                     Success = false,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = $"Artist with ID {request.ArtistId} does not exist.",
                 };
             }
+
+            if (request.AlbumId.HasValue && !await AlbumExistsAsync(request.AlbumId.Value, cancellationToken))
+            {
+                return new AddSongResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Album with ID {request.AlbumId.Value} does not exist.",
+                };
+            }
+
+            var song = new Song
+            {
+                Title = request.Title,
+                ArtistId = request.ArtistId,
+                AlbumId = request.AlbumId,
+                Duration = request.Duration,
+                TrackNumber = request.TrackNumber,
+                Bpm = request.Bpm,
+                SongGenres = request.GenreIds.Select(id => new SongGenre { GenreId = id }).ToList(),
+                CreatedBy = request.UserId,
+            };
+
+            if (!string.IsNullOrWhiteSpace(request.Lyrics))
+            {
+                song.Lyrics = new SongLyrics
+                {
+                    Lyrics = request.Lyrics,
+                };
+            }
+
+            await _context.Songs.AddAsync(song, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return new AddSongResult
+            {
+                Success = true,
+                SongId = song.Id,
+            };
         }
-
-        public async Task<DeleteSongResult> DeleteAsync(int songId, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
+            _logger.LogError(ex, "Failed to add song with title {Title}", request.Title);
+            return new AddSongResult
             {
-                var song = await _context.Songs
-                    .FirstOrDefaultAsync(s => s.Id == songId, cancellationToken);
+                Success = false,
+                ErrorMessage = ex.Message,
+            };
+        }
+    }
 
-                if (song is null)
-                {
-                    return new DeleteSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Song with ID {songId} was not found.",
-                    };
-                }
+    public async Task<DeleteSongResult> DeleteAsync(int songId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var song = await _context.Songs
+                .FirstOrDefaultAsync(s => s.Id == songId, cancellationToken);
 
-                _context.Songs.Remove(song);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return new DeleteSongResult
-                {
-                    Success = true,
-                };
-            }
-            catch (Exception ex)
+            if (song is null)
             {
-                _logger.LogError(ex, "Failed to delete song with ID {SongId}", songId);
                 return new DeleteSongResult
                 {
                     Success = false,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = $"Song with ID {songId} was not found.",
                 };
             }
+
+            _context.Songs.Remove(song);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return new DeleteSongResult
+            {
+                Success = true,
+            };
         }
-
-        public async Task<GetSongResult> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
+            _logger.LogError(ex, "Failed to delete song with ID {SongId}", songId);
+            return new DeleteSongResult
             {
-                var song = await _context.Songs
-                    .Include(s => s.Artist)
-                    .Include(s => s.Album)
-                        .ThenInclude(a => a.AlbumArtists)
-                            .ThenInclude(aa => aa.Artist)
-                    .Include(s => s.SongGenres)
-                        .ThenInclude(sg => sg.Genre)
-                    .Include(s => s.Lyrics)
-                    .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+                Success = false,
+                ErrorMessage = ex.Message,
+            };
+        }
+    }
 
-                if (song is null)
-                {
-                    return new GetSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Song with ID {id} was not found.",
-                    };
-                }
+    public async Task<GetSongResult> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var song = await _context.Songs
+                .Include(s => s.Artist)
+                .Include(s => s.Album)
+                    .ThenInclude(a => a.AlbumArtists)
+                        .ThenInclude(aa => aa.Artist)
+                .Include(s => s.SongGenres)
+                    .ThenInclude(sg => sg.Genre)
+                .Include(s => s.Lyrics)
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-                return new GetSongResult
-                {
-                    Success = true,
-                    SongDetails = MapToSongDetails(song),
-                };
-            }
-            catch (Exception ex)
+            if (song is null)
             {
-                _logger.LogError(ex, "Failed to retrieve song with ID {SongId}", id);
                 return new GetSongResult
                 {
                     Success = false,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = $"Song with ID {id} was not found.",
                 };
             }
+
+            return new GetSongResult
+            {
+                Success = true,
+                SongDetails = MapToSongDetails(song),
+            };
         }
-
-        public async Task<UpdateSongResult> UpdateAsync(UpdateSongRequest request, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
+            _logger.LogError(ex, "Failed to retrieve song with ID {SongId}", id);
+            return new GetSongResult
             {
-                var song = await _context.Songs
-                    .Include(s => s.Artist)
-                    .Include(s => s.Album)
-                        .ThenInclude(a => a.AlbumArtists)
-                            .ThenInclude(aa => aa.Artist)
-                    .Include(s => s.SongGenres)
-                        .ThenInclude(sg => sg.Genre)
-                    .Include(s => s.Lyrics)
-                    .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
+                Success = false,
+                ErrorMessage = ex.Message,
+            };
+        }
+    }
 
-                if (song is null)
-                {
-                    return new UpdateSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Song with ID {request.Id} was not found.",
-                    };
-                }
+    public async Task<UpdateSongResult> UpdateAsync(UpdateSongRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var song = await _context.Songs
+                .Include(s => s.Artist)
+                .Include(s => s.Album)
+                    .ThenInclude(a => a.AlbumArtists)
+                        .ThenInclude(aa => aa.Artist)
+                .Include(s => s.SongGenres)
+                    .ThenInclude(sg => sg.Genre)
+                .Include(s => s.Lyrics)
+                .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
 
-                if (request.GenreIds.Count != 0)
-                {
-                    var invalidGenreIds = await GetInvalidGenreIdsAsync(request.GenreIds, cancellationToken);
-                    if (invalidGenreIds.Count != 0)
-                    {
-                        return new UpdateSongResult
-                        {
-                            Success = false,
-                            ErrorMessage = $"The following genre IDs do not exist: {string.Join(", ", invalidGenreIds)}",
-                        };
-                    }
-                }
-
-                if (!await ArtistExistsAsync(request.ArtistId, cancellationToken))
-                {
-                    return new UpdateSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Artist with ID {request.ArtistId} does not exist.",
-                    };
-                }
-
-                if (request.AlbumId.HasValue && !await AlbumExistsAsync(request.AlbumId.Value, cancellationToken))
-                {
-                    return new UpdateSongResult
-                    {
-                        Success = false,
-                        ErrorMessage = $"Album with ID {request.AlbumId.Value} does not exist.",
-                    };
-                }
-
-                song.Title = request.Title;
-                song.ArtistId = request.ArtistId;
-                song.AlbumId = request.AlbumId;
-                song.Duration = request.Duration;
-                song.TrackNumber = request.TrackNumber;
-                song.Bpm = request.Bpm;
-                song.UpdatedBy = request.UserId;
-
-                if (!string.IsNullOrWhiteSpace(request.Lyrics))
-                {
-                    if (song.Lyrics is null)
-                    {
-                        song.Lyrics = new SongLyrics { Lyrics = request.Lyrics };
-                    }
-                    else
-                    {
-                        song.Lyrics.Lyrics = request.Lyrics;
-                    }
-                }
-                else if (song.Lyrics is not null)
-                {
-                    _context.Remove(song.Lyrics);
-                }
-
-                song.SongGenres = request.GenreIds
-                    .Select(id => new SongGenre { SongId = song.Id, GenreId = id })
-                    .ToList();
-
-                await _context.SaveChangesAsync(cancellationToken);
-
-                await _context.Entry(song)
-                    .Collection(s => s.SongGenres)
-                    .Query()
-                    .Include(sg => sg.Genre)
-                    .LoadAsync(cancellationToken);
-
-                return new UpdateSongResult
-                {
-                    Success = true,
-                    SongDetails = MapToSongDetails(song),
-                };
-            }
-            catch (Exception ex)
+            if (song is null)
             {
-                _logger.LogError(ex, "Failed to update song with ID {SongId}", request.Id);
                 return new UpdateSongResult
                 {
                     Success = false,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = $"Song with ID {request.Id} was not found.",
                 };
             }
-        }
 
-        private static SongDetails MapToSongDetails(Song song) => new()
-        {
-            Id = song.Id,
-            Title = song.Title,
-            ArtistId = song.ArtistId,
-            Artist = new ArtistSummary
+            if (request.GenreIds.Count != 0)
             {
-                Id = song.Artist.Id,
-                Name = song.Artist.Name,
-            },
-            AlbumId = song.AlbumId,
-            Album = song.Album is null ? null : new AlbumSummary
-            {
-                Id = song.Album.Id,
-                Title = song.Album.Title,
-                Artists = song.Album.AlbumArtists
-                    .Select(aa => new ArtistSummary
-                    {
-                        Id = aa.Artist.Id,
-                        Name = aa.Artist.Name,
-                    })
-                    .ToList(),
-            },
-            Duration = song.Duration,
-            Genres = song.SongGenres
-                .Select(sg => new GenreSummary
+                var invalidGenreIds = await GetInvalidGenreIdsAsync(request.GenreIds, cancellationToken);
+                if (invalidGenreIds.Count != 0)
                 {
-                    Id = sg.Genre.Id,
-                    Name = sg.Genre.Name,
+                    return new UpdateSongResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"The following genre IDs do not exist: {string.Join(", ", invalidGenreIds)}",
+                    };
+                }
+            }
+
+            if (!await ArtistExistsAsync(request.ArtistId, cancellationToken))
+            {
+                return new UpdateSongResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Artist with ID {request.ArtistId} does not exist.",
+                };
+            }
+
+            if (request.AlbumId.HasValue && !await AlbumExistsAsync(request.AlbumId.Value, cancellationToken))
+            {
+                return new UpdateSongResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Album with ID {request.AlbumId.Value} does not exist.",
+                };
+            }
+
+            song.Title = request.Title;
+            song.ArtistId = request.ArtistId;
+            song.AlbumId = request.AlbumId;
+            song.Duration = request.Duration;
+            song.TrackNumber = request.TrackNumber;
+            song.Bpm = request.Bpm;
+            song.UpdatedBy = request.UserId;
+
+            if (!string.IsNullOrWhiteSpace(request.Lyrics))
+            {
+                if (song.Lyrics is null)
+                {
+                    song.Lyrics = new SongLyrics { Lyrics = request.Lyrics };
+                }
+                else
+                {
+                    song.Lyrics.Lyrics = request.Lyrics;
+                }
+            }
+            else if (song.Lyrics is not null)
+            {
+                _context.Remove(song.Lyrics);
+            }
+
+            song.SongGenres = request.GenreIds
+                .Select(id => new SongGenre { SongId = song.Id, GenreId = id })
+                .ToList();
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await _context.Entry(song)
+                .Collection(s => s.SongGenres)
+                .Query()
+                .Include(sg => sg.Genre)
+                .LoadAsync(cancellationToken);
+
+            return new UpdateSongResult
+            {
+                Success = true,
+                SongDetails = MapToSongDetails(song),
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update song with ID {SongId}", request.Id);
+            return new UpdateSongResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message,
+            };
+        }
+    }
+
+    private static SongDetails MapToSongDetails(Song song) => new()
+    {
+        Id = song.Id,
+        Title = song.Title,
+        ArtistId = song.ArtistId,
+        Artist = new ArtistSummary
+        {
+            Id = song.Artist.Id,
+            Name = song.Artist.Name,
+        },
+        AlbumId = song.AlbumId,
+        Album = song.Album is null ? null : new AlbumSummary
+        {
+            Id = song.Album.Id,
+            Title = song.Album.Title,
+            Artists = song.Album.AlbumArtists
+                .Select(aa => new ArtistSummary
+                {
+                    Id = aa.Artist.Id,
+                    Name = aa.Artist.Name,
                 })
                 .ToList(),
-            TrackNumber = song.TrackNumber,
-            Bpm = song.Bpm,
-            Lyrics = song.Lyrics?.Lyrics ?? string.Empty,
-        };
+        },
+        Duration = song.Duration,
+        Genres = song.SongGenres
+            .Select(sg => new GenreSummary
+            {
+                Id = sg.Genre.Id,
+                Name = sg.Genre.Name,
+            })
+            .ToList(),
+        TrackNumber = song.TrackNumber,
+        Bpm = song.Bpm,
+        Lyrics = song.Lyrics?.Lyrics ?? string.Empty,
+    };
 
-        private async Task<List<int>> GetInvalidGenreIdsAsync(List<int> genreIds, CancellationToken cancellationToken)
-        {
-            var existingGenreIds = await _context.Genres
-                .Where(g => genreIds.Contains(g.Id))
-                .Select(g => g.Id)
-                .ToListAsync(cancellationToken);
+    private async Task<List<int>> GetInvalidGenreIdsAsync(List<int> genreIds, CancellationToken cancellationToken)
+    {
+        var existingGenreIds = await _context.Genres
+            .Where(g => genreIds.Contains(g.Id))
+            .Select(g => g.Id)
+            .ToListAsync(cancellationToken);
 
-            return genreIds.Except(existingGenreIds).ToList();
-        }
-
-        private async Task<bool> ArtistExistsAsync(int artistId, CancellationToken cancellationToken) =>
-            await _context.Artists.AnyAsync(a => a.Id == artistId, cancellationToken);
-
-        private async Task<bool> AlbumExistsAsync(int albumId, CancellationToken cancellationToken) =>
-            await _context.Albums.AnyAsync(a => a.Id == albumId, cancellationToken);
+        return genreIds.Except(existingGenreIds).ToList();
     }
+
+    private async Task<bool> ArtistExistsAsync(int artistId, CancellationToken cancellationToken) =>
+        await _context.Artists.AnyAsync(a => a.Id == artistId, cancellationToken);
+
+    private async Task<bool> AlbumExistsAsync(int albumId, CancellationToken cancellationToken) =>
+        await _context.Albums.AnyAsync(a => a.Id == albumId, cancellationToken);
 }

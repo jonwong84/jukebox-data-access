@@ -1,6 +1,6 @@
-﻿using Jukebox.DataAccess.EntityFramework;
+﻿using Jukebox.DataAccess.Datastore;
+using Jukebox.DataAccess.EntityFramework;
 using Jukebox.DataAccess.Interfaces;
-using Jukebox.DataAccess.Songs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
