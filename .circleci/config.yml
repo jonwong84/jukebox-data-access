@@ -109,14 +109,6 @@ jobs:
             echo "Resolved version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
-          name: Register GitHub Packages source
-          command: |
-            dotnet nuget add source "https://nuget.pkg.github.com/jonwong84/index.json" \
-              --name "github" \
-              --username "jonwong84" \
-              --password "$GITHUB_TOKEN" \
-              --store-password-in-clear-text
-      - run:
           name: Restore dependencies
           command: |
             dotnet restore "src/Jukebox.DataAccess.Contracts/Jukebox.DataAccess.Contracts.csproj"
@@ -164,14 +156,6 @@ jobs:
             echo "Resolved version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
-          name: Register GitHub Packages source
-          command: |
-            dotnet nuget add source "https://nuget.pkg.github.com/jonwong84/index.json" \
-              --name "github" \
-              --username "jonwong84" \
-              --password "$GITHUB_TOKEN" \
-              --store-password-in-clear-text
-      - run:
           name: Restore dependencies
           command: |
             dotnet restore "src/Jukebox.DataAccess.EntityFramework/Jukebox.DataAccess.EntityFramework.csproj"
@@ -218,14 +202,6 @@ jobs:
 
             echo "Resolved version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
-      - run:
-          name: Register GitHub Packages source
-          command: |
-            dotnet nuget add source "https://nuget.pkg.github.com/jonwong84/index.json" \
-              --name "github" \
-              --username "jonwong84" \
-              --password "$GITHUB_TOKEN" \
-              --store-password-in-clear-text
       - run:
           name: Restore dependencies
           command: |
