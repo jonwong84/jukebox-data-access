@@ -25,7 +25,7 @@ jobs:
               --configuration Release \
               --no-restore
 
-  sonar-scan:
+  resolve-version:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
@@ -35,6 +35,34 @@ jobs:
           command: |
             apt-get update && apt-get install -y nodejs npm
             npm install -g changelog-parser
+      - run:
+          name: Resolve and persist package version
+          command: |
+            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
+              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
+                const releases=JSON.parse(d).versions.filter(v=>v.version); \
+                console.log(releases[0].version);")
+
+            if [ "$CIRCLE_BRANCH" = "main" ]; then
+              PACKAGE_VERSION="$BASE_VERSION"
+            else
+              DATETIME=$(date -u +"%Y%m%d%H%M%S")
+              PACKAGE_VERSION="${BASE_VERSION}-beta.${DATETIME}"
+            fi
+
+            echo "Resolved version: $PACKAGE_VERSION"
+            mkdir -p /tmp/workspace
+            echo "$PACKAGE_VERSION" > /tmp/workspace/version.txt
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - version.txt
+
+  sonar-scan:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+      - checkout
       - run:
           name: Install SonarScanner
           command: |
@@ -86,27 +114,13 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Install Node.js and changelog-parser
+          name: Load package version
           command: |
-            apt-get update && apt-get install -y nodejs npm
-            npm install -g changelog-parser
-      - run:
-          name: Resolve package version
-          command: |
-            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
-              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
-                const releases=JSON.parse(d).versions.filter(v=>v.version); \
-                console.log(releases[0].version);")
-
-            if [ "$CIRCLE_BRANCH" = "main" ]; then
-              PACKAGE_VERSION="$BASE_VERSION"
-            else
-              DATETIME=$(date -u +"%Y%m%d%H%M%S")
-              PACKAGE_VERSION="${BASE_VERSION}-beta.${DATETIME}"
-            fi
-
-            echo "Resolved version: $PACKAGE_VERSION"
+            PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
           name: Restore dependencies
@@ -133,27 +147,13 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Install Node.js and changelog-parser
+          name: Load package version
           command: |
-            apt-get update && apt-get install -y nodejs npm
-            npm install -g changelog-parser
-      - run:
-          name: Resolve package version
-          command: |
-            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
-              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
-                const releases=JSON.parse(d).versions.filter(v=>v.version); \
-                console.log(releases[0].version);")
-
-            if [ "$CIRCLE_BRANCH" = "main" ]; then
-              PACKAGE_VERSION="$BASE_VERSION"
-            else
-              DATETIME=$(date -u +"%Y%m%d%H%M%S")
-              PACKAGE_VERSION="${BASE_VERSION}-beta.${DATETIME}"
-            fi
-
-            echo "Resolved version: $PACKAGE_VERSION"
+            PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
           name: Restore dependencies
@@ -180,27 +180,13 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Install Node.js and changelog-parser
+          name: Load package version
           command: |
-            apt-get update && apt-get install -y nodejs npm
-            npm install -g changelog-parser
-      - run:
-          name: Resolve package version
-          command: |
-            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
-              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
-                const releases=JSON.parse(d).versions.filter(v=>v.version); \
-                console.log(releases[0].version);")
-
-            if [ "$CIRCLE_BRANCH" = "main" ]; then
-              PACKAGE_VERSION="$BASE_VERSION"
-            else
-              DATETIME=$(date -u +"%Y%m%d%H%M%S")
-              PACKAGE_VERSION="${BASE_VERSION}-beta.${DATETIME}"
-            fi
-
-            echo "Resolved version: $PACKAGE_VERSION"
+            PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
           name: Restore dependencies
@@ -231,6 +217,14 @@ workflows:
               only:
                 - main
                 - /^feature\/.*/
+      - resolve-version:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only:
+                - main
+                - /^feature\/.*/
       - sonar-scan:
           context: global-v1
           requires:
@@ -242,7 +236,7 @@ workflows:
       - publish-contracts:
           context: global-v1
           requires:
-            - build-and-test
+            - resolve-version
           filters:
             branches:
               only:
