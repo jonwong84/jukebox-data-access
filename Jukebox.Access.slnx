@@ -2,6 +2,7 @@
   <Folder Name="/CoreData/">
     <Project Path="src/Jukebox.DataAccess.Contracts/Jukebox.DataAccess.Contracts.csproj" />
     <Project Path="src/Jukebox.DataAccess.EntityFramework/Jukebox.DataAccess.EntityFramework.csproj" />
+    <Project Path="src/Jukebox.DataAccess.Migrations/Jukebox.DataAccess.Migrations.csproj" />
     <Project Path="src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj" />
     <Project Path="src/Jukebox.DataAccess/Jukebox.DataAccess.csproj" />
   </Folder>
