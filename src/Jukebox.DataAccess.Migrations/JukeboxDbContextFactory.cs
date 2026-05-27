@@ -13,7 +13,8 @@ public class JukeboxDbContextFactory : IDesignTimeDbContextFactory<JukeboxDbCont
         var connectionString = Environment.GetEnvironmentVariable("JUKEBOX_DB_CONNECTION_STRING")
             ?? throw new InvalidOperationException("The environment variable 'JUKEBOX_DB_CONNECTION_STRING' is not set.");
 
-        optionsBuilder.UseSqlServer(connectionString);
+        optionsBuilder.UseSqlServer(connectionString, b =>
+            b.MigrationsAssembly("Jukebox.DataAccess.Migrations"));
 
         return new JukeboxDbContext(optionsBuilder.Options);
     }

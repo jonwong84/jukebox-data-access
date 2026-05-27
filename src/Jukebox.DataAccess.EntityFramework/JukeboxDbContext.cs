@@ -47,7 +47,7 @@ public class JukeboxDbContext : DbContext
                   .HasForeignKey(aa => aa.AlbumId)
                   .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(aa => aa.Artist)
-                  .WithMany()
+                  .WithMany(a => a.AlbumArtists)
                   .HasForeignKey(aa => aa.ArtistId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
