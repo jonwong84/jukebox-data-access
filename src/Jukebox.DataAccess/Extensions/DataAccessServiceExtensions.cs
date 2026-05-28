@@ -1,4 +1,5 @@
-﻿using Jukebox.DataAccess.Artists;
+﻿using Jukebox.DataAccess.Albums;
+using Jukebox.DataAccess.Artists;
 using Jukebox.DataAccess.EntityFramework;
 using Jukebox.DataAccess.Interfaces;
 using Jukebox.DataAccess.Songs;
@@ -19,6 +20,7 @@ public static class DataAccessServiceExtensions
 
         services.AddScoped<ISongRepositoryAccess, SongRepositoryAccess>();
         services.AddScoped<IArtistRepositoryAccess, ArtistRepositoryAccess>();
+        services.AddScoped<IAlbumRepositoryAccess, AlbumRepositoryAccess>();
 
         return services;
     }
