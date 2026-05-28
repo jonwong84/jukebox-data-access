@@ -11,5 +11,7 @@ public class Artist
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<Song> Songs { get; set; } = new List<Song>();
     public ICollection<AlbumArtist> AlbumArtists { get; set; } = new List<AlbumArtist>();
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 }
     

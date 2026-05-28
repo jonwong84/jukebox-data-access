@@ -7,7 +7,7 @@ using Jukebox.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jukebox.DataAccess.Datastore;
+namespace Jukebox.DataAccess.Songs;
 
 public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILogger<SongRepositoryAccess> logger) : ISongRepositoryAccess
 {

@@ -26,6 +26,8 @@ public class JukeboxDbContext : DbContext
             entity.Property(a => a.Name).IsRequired().HasMaxLength(200);
             entity.Property(a => a.Bio).HasMaxLength(2000);
             entity.HasMany(a => a.Songs).WithOne(s => s.Artist).HasForeignKey(s => s.ArtistId).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(a => a.CreatedBy).HasMaxLength(200);
+            entity.Property(a => a.UpdatedBy).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Album>(entity =>
@@ -37,6 +39,8 @@ public class JukeboxDbContext : DbContext
                   .WithOne(d => d.Album)
                   .HasForeignKey<AlbumDescription>(d => d.AlbumId)
                   .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(a => a.CreatedBy).HasMaxLength(200);
+            entity.Property(a => a.UpdatedBy).HasMaxLength(200);
         });
 
         modelBuilder.Entity<AlbumArtist>(entity =>
@@ -74,6 +78,8 @@ public class JukeboxDbContext : DbContext
                   .WithMany(g => g.SubGenres)
                   .HasForeignKey(g => g.ParentGenreId)
                   .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(g => g.CreatedBy).HasMaxLength(200);
+            entity.Property(g => g.UpdatedBy).HasMaxLength(200);
         });
 
         modelBuilder.Entity<SongGenre>(entity =>

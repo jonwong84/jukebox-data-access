@@ -11,4 +11,6 @@ public class Genre
     public int? ParentGenreId { get; set; }
     public Genre? ParentGenre { get; set; }
     public ICollection<Genre> SubGenres { get; set; } = new List<Genre>();
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 }

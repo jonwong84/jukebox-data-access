@@ -1,6 +1,7 @@
-﻿using Jukebox.DataAccess.Datastore;
+﻿using Jukebox.DataAccess.Artists;
 using Jukebox.DataAccess.EntityFramework;
 using Jukebox.DataAccess.Interfaces;
+using Jukebox.DataAccess.Songs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +18,7 @@ public static class DataAccessServiceExtensions
             options.UseSqlServer(connectionString));
 
         services.AddScoped<ISongRepositoryAccess, SongRepositoryAccess>();
+        services.AddScoped<IArtistRepositoryAccess, ArtistRepositoryAccess>();
 
         return services;
     }

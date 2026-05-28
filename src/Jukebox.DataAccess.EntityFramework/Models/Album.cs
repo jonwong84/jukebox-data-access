@@ -13,4 +13,6 @@ public class Album
     public AlbumDescription? Description { get; set; }
     public ICollection<AlbumArtist> AlbumArtists { get; set; } = new List<AlbumArtist>();
     public bool IsCompilation { get; set; } = false;
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 }
