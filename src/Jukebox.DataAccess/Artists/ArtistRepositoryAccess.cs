@@ -199,4 +199,36 @@ public class ArtistRepositoryAccess(EntityFramework.JukeboxDbContext context, IL
             })
             .ToList(),
     };
+
+    public async Task<ListArtistsResult> ListAsync(ListArtistsRequest request, CancellationToken cancellationToken = default)
+    {
+        var pageSize = Math.Min(request.PageSize, 100);
+        var pageNumber = Math.Max(request.PageNumber, 1);
+
+        var query = _context.Artists.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(request.NameSearch))
+            query = query.Where(a => a.Name.Contains(request.NameSearch));
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var artists = await query
+            .OrderBy(a => a.Name)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new ListArtistsResult
+        {
+            Success = true,
+            Artists = artists.Select(a => new ArtistSummary
+            {
+                Id = a.Id,
+                Name = a.Name
+            }).ToList(),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 }

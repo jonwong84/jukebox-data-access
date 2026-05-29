@@ -38,4 +38,12 @@ public interface IAlbumRepositoryAccess
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The result of the delete operation.</returns>
     Task<DeleteAlbumResult> DeleteAsync(int albumId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a list of albums.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ListAlbumsResult> ListAsync(ListAlbumsRequest request, CancellationToken cancellationToken = default);
 }

@@ -38,4 +38,12 @@ public interface IArtistRepositoryAccess
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The result of the delete operation.</returns>
     Task<DeleteArtistResult> DeleteAsync(int artistId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a list of artists.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ListArtistsResult> ListAsync(ListArtistsRequest request, CancellationToken cancellationToken = default);
 }

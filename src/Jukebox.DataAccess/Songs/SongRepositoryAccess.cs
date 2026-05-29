@@ -322,4 +322,58 @@ public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILog
 
     private async Task<bool> AlbumExistsAsync(int albumId, CancellationToken cancellationToken) =>
         await _context.Albums.AnyAsync(a => a.Id == albumId, cancellationToken);
+
+    public async Task<ListSongsResult> ListAsync(ListSongsRequest request, CancellationToken cancellationToken = default)
+    {
+        var pageSize = Math.Min(request.PageSize, 100);
+        var pageNumber = Math.Max(request.PageNumber, 1);
+
+        var query = _context.Songs
+            .Include(s => s.Artist)
+            .Include(s => s.Album)
+                .ThenInclude(a => a!.AlbumArtists)
+                    .ThenInclude(aa => aa.Artist)
+            .AsQueryable();
+
+        if (request.ArtistId.HasValue)
+            query = query.Where(s => s.ArtistId == request.ArtistId.Value);
+
+        if (request.AlbumId.HasValue)
+            query = query.Where(s => s.AlbumId == request.AlbumId.Value);
+
+        if (request.GenreId.HasValue)
+            query = query.Where(s => s.SongGenres.Any(sg => sg.GenreId == request.GenreId.Value));
+
+        if (request.MinBpm.HasValue)
+            query = query.Where(s => s.Bpm >= request.MinBpm.Value);
+
+        if (request.MaxBpm.HasValue)
+            query = query.Where(s => s.Bpm <= request.MaxBpm.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.TitleSearch))
+            query = query.Where(s => s.Title.Contains(request.TitleSearch));
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var songs = await query
+            .OrderBy(s => s.Title)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new ListSongsResult
+        {
+            Success = true,
+            Songs = songs.Select(s => new SongSummary
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Artist = s.Artist.Name,
+                Album = s.Album?.Title
+            }).ToList(),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 }

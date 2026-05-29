@@ -35,4 +35,12 @@ public interface ISongRepositoryAccess
     /// <param name="songId">The ID of the song to delete.</param>
     /// <returns>The result of the delete operation.</returns>
     Task<DeleteSongResult> DeleteAsync(int songId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a list of songs.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ListSongsResult> ListAsync(ListSongsRequest request, CancellationToken cancellationToken = default);
 }
