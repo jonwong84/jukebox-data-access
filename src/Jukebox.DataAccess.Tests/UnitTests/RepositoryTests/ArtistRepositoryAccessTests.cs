@@ -2,7 +2,7 @@ using Jukebox.DataAccess.Artists;
 using Jukebox.DataAccess.Contracts.DataContracts.Artist;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Jukebox.DataAccess.Tests;
+namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
 
 public class ArtistRepositoryAccessTests : RepositoryTestBase
 {

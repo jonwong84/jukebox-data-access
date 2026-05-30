@@ -3,7 +3,7 @@ using Jukebox.DataAccess.EntityFramework.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jukebox.DataAccess.Tests;
+namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
 
 public abstract class RepositoryTestBase : IDisposable
 {

@@ -3,7 +3,7 @@ using Jukebox.DataAccess.Contracts.DataContracts.Album;
 using Microsoft.Extensions.Logging.Abstractions;
 using Jukebox.DataAccess.EntityFramework.Models;
 
-namespace Jukebox.DataAccess.Tests;
+namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
 
 public class AlbumRepositoryAccessTests : RepositoryTestBase
 {

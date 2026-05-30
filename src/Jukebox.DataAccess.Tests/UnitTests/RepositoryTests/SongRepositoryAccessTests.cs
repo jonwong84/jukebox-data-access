@@ -4,7 +4,7 @@ using Jukebox.DataAccess.Songs;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Linq;
 
-namespace Jukebox.DataAccess.Tests;
+namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
 
 public class SongRepositoryAccessTests : RepositoryTestBase
 {
