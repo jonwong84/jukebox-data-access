@@ -12,6 +12,7 @@ jobs:
             dotnet restore "src/Jukebox.DataAccess.Contracts/Jukebox.DataAccess.Contracts.csproj"
             dotnet restore "src/Jukebox.DataAccess.EntityFramework/Jukebox.DataAccess.EntityFramework.csproj"
             dotnet restore "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj"
+            dotnet restore "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj"
       - run:
           name: Build
           command: |
@@ -24,6 +25,23 @@ jobs:
             dotnet build "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj" \
               --configuration Release \
               --no-restore
+            dotnet build "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj" \
+              --configuration Release \
+              --no-restore
+      - run:
+          name: Test with coverage
+          command: |
+            mkdir -p /tmp/workspace
+            dotnet test "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj" \
+              --configuration Release \
+              --no-restore \
+              /p:CollectCoverage=true \
+              /p:CoverletOutputFormat=opencover \
+              /p:CoverletOutput="/tmp/workspace/coverage.opencover.xml"
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - coverage.opencover.xml
 
   resolve-version:
     docker:
@@ -63,6 +81,8 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name: Install SonarScanner
           command: |
@@ -75,11 +95,11 @@ jobs:
             dotnet restore "src/Jukebox.DataAccess.Contracts/Jukebox.DataAccess.Contracts.csproj"
             dotnet restore "src/Jukebox.DataAccess.EntityFramework/Jukebox.DataAccess.EntityFramework.csproj"
             dotnet restore "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj"
+            dotnet restore "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj"
       - run:
           name: Begin SonarScan
           command: |
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
-            COVERAGE_REPORT="$PWD/src/Jukebox.DataAccess.Tests/coverage.opencover.xml"
             dotnet sonarscanner begin \
               /k:"jonwong84_jukebox-data-access" \
               /o:"jonwong84" \
@@ -88,7 +108,7 @@ jobs:
               /d:sonar.pullrequest.key="$PR_NUMBER" \
               /d:sonar.pullrequest.branch="$CIRCLE_BRANCH" \
               /d:sonar.pullrequest.base="main" \
-              /d:sonar.cs.opencover.reportsPaths="$COVERAGE_REPORT" \
+              /d:sonar.cs.opencover.reportsPaths="/tmp/workspace/coverage.opencover.xml" \
               /d:sonar.tests="src/Jukebox.DataAccess.Tests" \
               /d:sonar.test.inclusions="src/Jukebox.DataAccess.Tests/**/*.cs"
       - run:
@@ -101,6 +121,9 @@ jobs:
               --configuration Release \
               --no-restore
             dotnet build "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj" \
+              --configuration Release \
+              --no-restore
+            dotnet build "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj" \
               --configuration Release \
               --no-restore
       - run:
