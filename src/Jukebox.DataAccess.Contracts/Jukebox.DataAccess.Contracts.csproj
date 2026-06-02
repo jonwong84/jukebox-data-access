@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<PackageId>Jukebox.DataAccess.Contracts</PackageId>
+		<Authors>jonwong84</Authors>
+		<Description>Data access contracts for the Jukebox API including request and result types.</Description>
+		<RepositoryUrl>https://github.com/jonwong84/jukebox-data-access</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>
