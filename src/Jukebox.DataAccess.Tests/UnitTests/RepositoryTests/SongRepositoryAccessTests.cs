@@ -1,6 +1,6 @@
 using Jukebox.DataAccess.Contracts.DataContracts.Song;
 using Jukebox.DataAccess.EntityFramework.Models;
-using Jukebox.DataAccess.Songs;
+using Jukebox.DataAccess.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Linq;
 

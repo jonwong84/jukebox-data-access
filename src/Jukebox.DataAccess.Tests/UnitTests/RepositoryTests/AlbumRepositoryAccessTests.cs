@@ -1,7 +1,7 @@
-using Jukebox.DataAccess.Albums;
 using Jukebox.DataAccess.Contracts.DataContracts.Album;
 using Microsoft.Extensions.Logging.Abstractions;
 using Jukebox.DataAccess.EntityFramework.Models;
+using Jukebox.DataAccess.Repositories;
 
 namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
 

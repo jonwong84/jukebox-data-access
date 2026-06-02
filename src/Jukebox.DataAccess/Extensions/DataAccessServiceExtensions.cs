@@ -1,8 +1,6 @@
-﻿using Jukebox.DataAccess.Albums;
-using Jukebox.DataAccess.Artists;
-using Jukebox.DataAccess.EntityFramework;
+﻿using Jukebox.DataAccess.EntityFramework;
 using Jukebox.DataAccess.Interfaces;
-using Jukebox.DataAccess.Songs;
+using Jukebox.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

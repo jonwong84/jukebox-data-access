@@ -1,5 +1,5 @@
-using Jukebox.DataAccess.Artists;
 using Jukebox.DataAccess.Contracts.DataContracts.Artist;
+using Jukebox.DataAccess.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jukebox.DataAccess.Tests.UnitTests.RepositoryTests;
