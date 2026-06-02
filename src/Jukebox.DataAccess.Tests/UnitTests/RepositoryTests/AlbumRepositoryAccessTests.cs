@@ -317,7 +317,7 @@ public class AlbumRepositoryAccessTests : RepositoryTestBase
             Id = album.Id,
             Title = album.Title,
             ArtistIds = new List<int> { artist.Id },
-            Description = null,
+            Description = null!,
             IsCompilation = false,
             UserId = "user-abc"
         };

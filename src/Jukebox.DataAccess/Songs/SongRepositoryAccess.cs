@@ -131,7 +131,7 @@ public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILog
             var song = await _context.Songs
                 .Include(s => s.Artist)
                 .Include(s => s.Album)
-                    .ThenInclude(a => a.AlbumArtists)
+                    .ThenInclude(a => a!.AlbumArtists)
                         .ThenInclude(aa => aa.Artist)
                 .Include(s => s.SongGenres)
                     .ThenInclude(sg => sg.Genre)
@@ -171,7 +171,7 @@ public class SongRepositoryAccess(EntityFramework.JukeboxDbContext context, ILog
             var song = await _context.Songs
                 .Include(s => s.Artist)
                 .Include(s => s.Album)
-                    .ThenInclude(a => a.AlbumArtists)
+                    .ThenInclude(a => a!.AlbumArtists)
                         .ThenInclude(aa => aa.Artist)
                 .Include(s => s.SongGenres)
                     .ThenInclude(sg => sg.Genre)
