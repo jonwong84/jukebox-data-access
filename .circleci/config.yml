@@ -101,9 +101,8 @@ jobs:
           command: |
             API_RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/repos/jonwong84/jukebox-data-access/pulls?state=open&head=jonwong84:$CIRCLE_BRANCH")
-            echo "API Response: $API_RESPONSE"
             PR_NUMBER=$(echo "$API_RESPONSE" \
-              | grep -o '"number": [0-9]*' | head -1 | grep -o '[0-9]*')
+              | grep -o '"number": [0-9]*' | head -1 | grep -o '[0-9]*' || true)
             echo "PR_NUMBER=$PR_NUMBER"
             echo "export PR_NUMBER=$PR_NUMBER" >> $BASH_ENV
       - run:
