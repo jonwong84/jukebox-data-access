@@ -97,9 +97,20 @@ jobs:
             dotnet restore "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj"
             dotnet restore "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj"
       - run:
+          name: Resolve PR Number
+          command: |
+            PR_NUMBER=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/jonwong84/jukebox-data-access/pulls?state=open&head=jonwong84:$CIRCLE_BRANCH" \
+              | grep -o '"number": [0-9]*' | head -1 | grep -o '[0-9]*')
+            echo "PR_NUMBER=$PR_NUMBER"
+            echo "export PR_NUMBER=$PR_NUMBER" >> $BASH_ENV
+      - run:
           name: Begin SonarScan
           command: |
-            PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
+            if [ -z "$PR_NUMBER" ]; then
+              echo "No open PR found for branch $CIRCLE_BRANCH — skipping Sonar scan"
+              circleci-agent step halt
+            fi
             dotnet sonarscanner begin \
               /k:"jonwong84_jukebox-data-access" \
               /o:"jonwong84" \
