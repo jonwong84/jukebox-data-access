@@ -74,11 +74,13 @@ public abstract class RepositoryTestBase : IDisposable
         return album;
     }
 
-    protected Genre SeedGenre(string name = "Rock", string? parentGenreId = null, string? createdBy = null)
+    protected Genre SeedGenre(string name = "Rock", int? parentGenreId = null, string? description = null, string? createdBy = null)
     {
         var genre = new Genre
         {
             Name = name,
+            Description = description,
+            ParentGenreId = parentGenreId,
             CreatedBy = createdBy
         };
         DbContext.Genres.Add(genre);
