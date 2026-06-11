@@ -10,7 +10,6 @@ public class AlbumDetails
     public required string Title { get; set; }
     public List<ArtistSummary> Artists { get; set; } = [];
     public DateTime? ReleaseDate { get; set; }
-    public DateTime CreatedAt { get; set; }
     public bool IsCompilation { get; set; }
     public string Description { get; set; } = string.Empty;
 }

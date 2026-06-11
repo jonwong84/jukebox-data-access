@@ -1,6 +1,6 @@
 ﻿using Jukebox.DataAccess.Contracts.DataContracts.Album;
 using Jukebox.DataAccess.Contracts.DataContracts.Artist;
-using Jukebox.DataAccess.Contracts.DataContracts.Common;
+using Jukebox.DataAccess.Contracts.DataContracts.Genre;
 using System;
 using System.Collections.Generic;
 

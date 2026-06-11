@@ -92,7 +92,7 @@ To consume from another project, see [docs/LOCAL_DEV.md#consuming-the-packages](
 
 | Project | Tests |
 |---|---|
-| `Jukebox.DataAccess.Tests` | 76 |
+| `Jukebox.DataAccess.Tests` | 100 |
 
 ```bash
 dotnet test

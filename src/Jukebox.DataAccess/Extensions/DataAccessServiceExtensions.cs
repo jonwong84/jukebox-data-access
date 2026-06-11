@@ -1,4 +1,5 @@
-﻿using Jukebox.DataAccess.EntityFramework;
+﻿using Jukebox.DataAccess.Contracts.Interfaces;
+using Jukebox.DataAccess.EntityFramework;
 using Jukebox.DataAccess.Interfaces;
 using Jukebox.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public static class DataAccessServiceExtensions
         services.AddScoped<ISongRepositoryAccess, SongRepositoryAccess>();
         services.AddScoped<IArtistRepositoryAccess, ArtistRepositoryAccess>();
         services.AddScoped<IAlbumRepositoryAccess, AlbumRepositoryAccess>();
+        services.AddScoped<IGenreRepositoryAccess, GenreRepositoryAccess>();
 
         return services;
     }

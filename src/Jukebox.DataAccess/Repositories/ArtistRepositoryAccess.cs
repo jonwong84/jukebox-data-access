@@ -103,6 +103,7 @@ public class ArtistRepositoryAccess(EntityFramework.JukeboxDbContext context, IL
             artist.Name = request.Name;
             artist.Bio = request.Bio;
             artist.UpdatedBy = request.UserId;
+            artist.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -183,7 +184,6 @@ public class ArtistRepositoryAccess(EntityFramework.JukeboxDbContext context, IL
         Id = artist.Id,
         Name = artist.Name,
         Bio = artist.Bio ?? string.Empty,
-        CreatedAt = artist.CreatedAt,
         Albums = artist.AlbumArtists
             .Select(aa => new AlbumSummary
             {

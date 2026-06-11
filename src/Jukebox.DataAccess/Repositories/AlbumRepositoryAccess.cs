@@ -255,7 +255,6 @@ public class AlbumRepositoryAccess(EntityFramework.JukeboxDbContext context, ILo
             })
             .ToList(),
         ReleaseDate = album.ReleaseDate,
-        CreatedAt = album.CreatedAt,
         IsCompilation = album.IsCompilation,
         Description = album.Description?.Description ?? string.Empty,
     };

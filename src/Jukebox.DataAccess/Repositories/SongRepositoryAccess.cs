@@ -1,6 +1,6 @@
 ﻿using Jukebox.DataAccess.Contracts.DataContracts.Album;
 using Jukebox.DataAccess.Contracts.DataContracts.Artist;
-using Jukebox.DataAccess.Contracts.DataContracts.Common;
+using Jukebox.DataAccess.Contracts.DataContracts.Genre;
 using Jukebox.DataAccess.Contracts.DataContracts.Song;
 using Jukebox.DataAccess.EntityFramework.Models;
 using Jukebox.DataAccess.Interfaces;

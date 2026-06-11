@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Jukebox.DataAccess.EntityFramework.Models;
@@ -13,4 +14,6 @@ public class Genre
     public ICollection<Genre> SubGenres { get; set; } = new List<Genre>();
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
 }

@@ -19,4 +19,8 @@
 		<ProjectReference Include="..\Jukebox.DataAccess.Contracts\Jukebox.DataAccess.Contracts.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
+
 </Project>
