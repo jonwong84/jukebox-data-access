@@ -45,29 +45,16 @@ jobs:
 
   resolve-version:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
+      - image: cimg/python:3.12
     steps:
       - checkout
       - run:
-          name: Install Node.js and changelog-parser
-          command: |
-            apt-get update && apt-get install -y nodejs npm
-            npm install -g changelog-parser
+          name: Install jw-cicd-tools
+          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@v0.2.0
       - run:
           name: Resolve and persist package version
           command: |
-            BASE_VERSION=$(changelog-parser CHANGELOG.md | \
-              node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); \
-                const releases=JSON.parse(d).versions.filter(v=>v.version); \
-                console.log(releases[0].version);")
-
-            if [ "$CIRCLE_BRANCH" = "main" ]; then
-              PACKAGE_VERSION="$BASE_VERSION"
-            else
-              DATETIME=$(date -u +"%Y%m%d%H%M%S")
-              PACKAGE_VERSION="${BASE_VERSION}-beta.${DATETIME}"
-            fi
-
+            PACKAGE_VERSION=$(jw_cicd version resolve --changelog CHANGELOG.md --branch "$CIRCLE_BRANCH")
             echo "Resolved version: $PACKAGE_VERSION"
             mkdir -p /tmp/workspace
             echo "$PACKAGE_VERSION" > /tmp/workspace/version.txt
@@ -254,13 +241,9 @@ workflows:
                 - main
                 - /^feature\/.*/
       - resolve-version:
+          context: global-v1
           requires:
             - build-and-test
-          filters:
-            branches:
-              only:
-                - main
-                - /^feature\/.*/
       - sonar-scan:
           context: global-v1
           requires:
