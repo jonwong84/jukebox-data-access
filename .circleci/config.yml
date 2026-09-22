@@ -241,9 +241,13 @@ workflows:
                 - main
                 - /^feature\/.*/
       - resolve-version:
-          context: global-v1
           requires:
             - build-and-test
+          filters:
+            branches:
+              only:
+                - main
+                - /^feature\/.*/
       - sonar-scan:
           context: global-v1
           requires:
