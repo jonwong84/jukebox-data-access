@@ -50,7 +50,7 @@ jobs:
       - checkout
       - run:
           name: Install jw-cicd-tools
-          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@v0.2.0
+          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@20873c3ac48a1c4c606453191299a92812a9218f
       - run:
           name: Resolve and persist package version
           command: |
