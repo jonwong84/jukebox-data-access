@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-08
+
 ### Changed
 - Migrated CI to the trunk-based release flow (jw-cicd-tools v0.4.0): merges to `main` release automatically when `[Unreleased]` has entries, and `feature/*` branch builds publish `-beta.<timestamp>` packages
 - PR number lookup uses `jw_cicd pr resolve` instead of parsing raw JSON with `grep`
