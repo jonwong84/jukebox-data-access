@@ -43,6 +43,9 @@ jobs:
           paths:
             - coverage.opencover.xml
 
+  # Feature branches only. On main, the release job below resolves (and
+  # stamps) the version itself. Also resolves the PR number for sonar-scan,
+  # because the .NET SDK image used there has no Python.
   resolve-version:
     docker:
       - image: cimg/python:3.12
@@ -50,7 +53,9 @@ jobs:
       - checkout
       - run:
           name: Install jw-cicd-tools
-          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@20873c3ac48a1c4c606453191299a92812a9218f
+          # v0.4.0 — pinned to the commit the tag points at (immutable),
+          # not the mutable tag itself.
+          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@d2b8915ab74ca83b5e9410181133b99ce56294b4
       - run:
           name: Resolve and persist package version
           command: |
@@ -58,10 +63,22 @@ jobs:
             echo "Resolved version: $PACKAGE_VERSION"
             mkdir -p /tmp/workspace
             echo "$PACKAGE_VERSION" > /tmp/workspace/version.txt
+      - run:
+          name: Resolve PR Number
+          command: |
+            # Looks up the open PR number for this branch with the shared
+            # jw_cicd command. sonar-scan skips when the result is empty.
+            # --token isn't passed explicitly; it defaults to $GITHUB_TOKEN
+            # from this job's context.
+            set -e
+            PR_NUMBER=$(jw_cicd pr resolve --repo jonwong84/jukebox-data-access --branch "$CIRCLE_BRANCH")
+            echo "PR_NUMBER=$PR_NUMBER"
+            echo "$PR_NUMBER" > /tmp/workspace/pr_number.txt
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - version.txt
+            - pr_number.txt
 
   sonar-scan:
     docker:
@@ -84,12 +101,9 @@ jobs:
             dotnet restore "src/Jukebox.DataAccess/Jukebox.DataAccess.csproj"
             dotnet restore "src/Jukebox.DataAccess.Tests/Jukebox.DataAccess.Tests.csproj"
       - run:
-          name: Resolve PR Number
+          name: Load PR Number
           command: |
-            API_RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/jonwong84/jukebox-data-access/pulls?state=open&head=jonwong84:$CIRCLE_BRANCH")
-            PR_NUMBER=$(echo "$API_RESPONSE" \
-              | grep -o '"number": [0-9]*' | head -1 | grep -o '[0-9]*' || true)
+            PR_NUMBER=$(cat /tmp/workspace/pr_number.txt)
             echo "PR_NUMBER=$PR_NUMBER"
             echo "export PR_NUMBER=$PR_NUMBER" >> $BASH_ENV
       - run:
@@ -132,6 +146,88 @@ jobs:
             dotnet sonarscanner end \
               /d:sonar.token="$SONAR_TOKEN"
 
+  # main only. Stamps the changelog, commits it with [skip ci], tags it, and
+  # pushes both atomically. Writes the released version (or an empty file when
+  # there is nothing to release) to the workspace for the publish-*-main jobs.
+  # One version and one tag cover all three packages.
+  release:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Install jw-cicd-tools
+          # v0.4.0 — pinned to the commit the tag points at (immutable),
+          # not the mutable tag itself.
+          command: pip install git+https://github.com/jonwong84/jw-cicd-tools.git@d2b8915ab74ca83b5e9410181133b99ce56294b4
+      - run:
+          name: Stamp changelog, tag, and push release
+          command: |
+            git config user.name "CircleCI"
+            git config user.email "ci@users.noreply.github.com"
+            REPO_URL="https://${GITHUB_TOKEN}@github.com/jonwong84/jukebox-data-access.git"
+
+            # Empty by default: the publish jobs skip when version.txt is blank.
+            mkdir -p /tmp/workspace
+            : > /tmp/workspace/version.txt
+
+            # Only the newest commit on main may release. If main has moved
+            # past this pipeline's commit, a newer pipeline (whose tree
+            # includes these changes) will release them. Releasing from this
+            # stale tree would publish packages missing the newer code.
+            REMOTE_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+            if [ "$(git rev-parse HEAD)" != "$REMOTE_SHA" ]; then
+              echo "main has moved past this commit; a newer pipeline will release. Nothing to do here."
+              exit 0
+            fi
+
+            # On main this prints the version that will be released, or a
+            # blank line when [Unreleased] has no entries.
+            VERSION=$(jw_cicd version resolve --changelog CHANGELOG.md --branch "$CIRCLE_BRANCH")
+            if [ -z "$VERSION" ]; then
+              echo "Nothing to release."
+              exit 0
+            fi
+            echo "Releasing version: $VERSION"
+
+            # Check origin directly rather than a local tag ref. With
+            # entries under [Unreleased], an existing tag means something
+            # is wrong.
+            if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+              echo "Tag v$VERSION already exists on origin, but [Unreleased] still has entries." >&2
+              exit 1
+            fi
+
+            jw_cicd release stamp --changelog CHANGELOG.md >/dev/null
+            git add CHANGELOG.md
+            git commit -m "Release v$VERSION [skip ci]"
+            git tag -a "v$VERSION" -m "Release v$VERSION"
+
+            # Atomic: the stamp commit and the tag land together or not at
+            # all. This is the first step that writes to the remote, so a
+            # ruleset rejection leaves nothing tagged or published.
+            if git push --atomic "$REPO_URL" HEAD:refs/heads/main "refs/tags/v$VERSION" 2>push_error.log; then
+              echo "Released v$VERSION"
+              echo "$VERSION" > /tmp/workspace/version.txt
+              exit 0
+            fi
+
+            # No retry: after a failed push this tree may no longer be the tip
+            # of main, and the packages must be built from the commit the
+            # release was computed from. Fail loudly instead.
+            if grep -qE 'GH013|GH006|protected branch|rule violations' push_error.log; then
+              echo "Push to main was rejected by a branch rule:" >&2
+            else
+              echo "Push to main failed (main may have moved since the tip check):" >&2
+            fi
+            # Redact the token in case git echoes the remote URL.
+            sed "s|${GITHUB_TOKEN}|***|g" push_error.log >&2
+            exit 1
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - version.txt
+
   publish-contracts:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -143,6 +239,13 @@ jobs:
           name: Load package version
           command: |
             PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            # A blank version means the release job found nothing to
+            # release (for example a docs-only merge): don't publish.
+            if [ -z "$PACKAGE_VERSION" ]; then
+              echo "Nothing to release — skipping package publish"
+              circleci-agent step halt
+              exit 0
+            fi
             echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
@@ -176,6 +279,13 @@ jobs:
           name: Load package version
           command: |
             PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            # A blank version means the release job found nothing to
+            # release (for example a docs-only merge): don't publish.
+            if [ -z "$PACKAGE_VERSION" ]; then
+              echo "Nothing to release — skipping package publish"
+              circleci-agent step halt
+              exit 0
+            fi
             echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
@@ -209,6 +319,13 @@ jobs:
           name: Load package version
           command: |
             PACKAGE_VERSION=$(cat /tmp/workspace/version.txt)
+            # A blank version means the release job found nothing to
+            # release (for example a docs-only merge): don't publish.
+            if [ -z "$PACKAGE_VERSION" ]; then
+              echo "Nothing to release — skipping package publish"
+              circleci-agent step halt
+              exit 0
+            fi
             echo "Package version: $PACKAGE_VERSION"
             echo "export PACKAGE_VERSION='$PACKAGE_VERSION'" >> $BASH_ENV
       - run:
@@ -240,15 +357,9 @@ workflows:
               only:
                 - main
                 - /^feature\/.*/
+      # Feature branches: resolve a beta version and PR number, scan,
+      # publish beta packages.
       - resolve-version:
-          requires:
-            - build-and-test
-          filters:
-            branches:
-              only:
-                - main
-                - /^feature\/.*/
-      - sonar-scan:
           context: global-v1
           requires:
             - build-and-test
@@ -256,30 +367,76 @@ workflows:
             branches:
               only:
                 - /^feature\/.*/
+      - sonar-scan:
+          context: global-v1
+          requires:
+            - build-and-test
+            - resolve-version
+          filters:
+            branches:
+              only:
+                - /^feature\/.*/
       - publish-contracts:
+          name: publish-contracts-branch
           context: global-v1
           requires:
             - resolve-version
           filters:
             branches:
               only:
-                - main
                 - /^feature\/.*/
       - publish-entityframework:
+          name: publish-entityframework-branch
           context: global-v1
           requires:
-            - publish-contracts
+            - publish-contracts-branch
           filters:
             branches:
               only:
-                - main
                 - /^feature\/.*/
       - publish-dataaccess:
+          name: publish-dataaccess-branch
           context: global-v1
           requires:
-            - publish-entityframework
+            - publish-entityframework-branch
+          filters:
+            branches:
+              only:
+                - /^feature\/.*/
+      # main: release first (stamp, tag, push), then publish the three
+      # packages in order only if it succeeded.
+      - release:
+          context: global-v1
+          requires:
+            - build-and-test
           filters:
             branches:
               only:
                 - main
-                - /^feature\/.*/
+      - publish-contracts:
+          name: publish-contracts-main
+          context: global-v1
+          requires:
+            - release
+          filters:
+            branches:
+              only:
+                - main
+      - publish-entityframework:
+          name: publish-entityframework-main
+          context: global-v1
+          requires:
+            - publish-contracts-main
+          filters:
+            branches:
+              only:
+                - main
+      - publish-dataaccess:
+          name: publish-dataaccess-main
+          context: global-v1
+          requires:
+            - publish-entityframework-main
+          filters:
+            branches:
+              only:
+                - main
